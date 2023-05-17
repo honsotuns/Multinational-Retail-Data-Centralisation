@@ -69,7 +69,7 @@ class DataCleaning:
           #print (self.df_bucket)
          
 
-      def clean_products_data(self): # Send to database from here
+      def clean_products_data(self): 
           self.df_bucket = self.df_bucket.dropna(how='all')
           self.df_bucket['removed'] = self.df_bucket['removed'].astype('category')
           self.df_bucket['category'] = self.df_bucket['category'].astype('category')
@@ -105,34 +105,34 @@ clean_data = DataCleaning()
 
 #print(engine)
 #engine.connect()
-# engine = create_engine(f"{'postgresql'}+{'psycopg2'}://{'postgres'}:{'Babatunde123'}@{'localhost'}:{'5432'}/{'Sales_Data'}") # yaml
+# engine = create_engine(f"{'postgresql'}+{'psycopg2'}://{'postgres'}:{'###'}@{'localhost'}:{'5432'}/{'Sales_Data'}") # yaml
 # DatabaseConnector().upload_to_db(df,'dim_users', engine)
 
 
 # engine = DataExtractor().retrieve_pdf_data() # engine for pdf
 # df = DataCleaning().clean_card_data()
-# engine = create_engine(f"{'postgresql'}+{'psycopg2'}://{'postgres'}:{'Babatunde123'}@{'localhost'}:{'5432'}/{'Sales_Data'}") #pdf
+# engine = create_engine(f"{'postgresql'}+{'psycopg2'}://{'postgres'}:{'###'}@{'localhost'}:{'5432'}/{'Sales_Data'}") #pdf
 # DatabaseConnector().upload_to_db(df,'dim_card_details', engine)
 
 # engine = DataExtractor().retrieve_stores_data(num_of_stores=451) # engine for df_api
 # df = DataCleaning().called_clean_store_data()
-# engine = create_engine(f"{'postgresql'}+{'psycopg2'}://{'postgres'}:{'Babatunde123'}@{'localhost'}:{'5432'}/{'Sales_Data'}") #api
+# engine = create_engine(f"{'postgresql'}+{'psycopg2'}://{'postgres'}:{'###'}@{'localhost'}:{'5432'}/{'Sales_Data'}") #api
 # DatabaseConnector().upload_to_db(df,'dim_store_details', engine)
 
 # engine = DataExtractor().extract_from_s3() # engine for df_bucket
 # df = DataCleaning().convert_product_weights()
 # #df = DataCleaning().clean_products_data()
-# engine = create_engine(f"{'postgresql'}+{'psycopg2'}://{'postgres'}:{'Babatunde123'}@{'localhost'}:{'5432'}/{'Sales_Data'}") #bucket
+# engine = create_engine(f"{'postgresql'}+{'psycopg2'}://{'postgres'}:{'###'}@{'localhost'}:{'5432'}/{'Sales_Data'}") #bucket
 # DatabaseConnector().upload_to_db(df,'dim_products', engine)
 
 # engine = DatabaseConnector().init_db_engine()
 # df = DataCleaning().clean_orders_data()
-# engine = create_engine(f"{'postgresql'}+{'psycopg2'}://{'postgres'}:{'Babatunde123'}@{'localhost'}:{'5432'}/{'Sales_Data'}") #new_df_orders. Task 6
+# engine = create_engine(f"{'postgresql'}+{'psycopg2'}://{'postgres'}:{'###'}@{'localhost'}:{'5432'}/{'Sales_Data'}") #new_df_orders. Task 6
 # DatabaseConnector().upload_to_db(df,'orders_table', engine)
 
 # engine = DataExtractor().sales_date()
 # df = DataCleaning().cleaning_sales_date()
-# engine = create_engine(f"{'postgresql'}+{'psycopg2'}://{'postgres'}:{'Babatunde123'}@{'localhost'}:{'5432'}/{'Sales_Data'}") #sales_date
+# engine = create_engine(f"{'postgresql'}+{'psycopg2'}://{'postgres'}:{'###'}@{'localhost'}:{'5432'}/{'Sales_Data'}") #sales_date
 # DatabaseConnector().upload_to_db(df,'dim_date_times', engine)
 
 #clean_data.clean_card_data()
