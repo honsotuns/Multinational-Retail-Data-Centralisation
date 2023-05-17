@@ -1,13 +1,12 @@
-from sqlalchemy import create_engine
 import psycopg2
 import yaml
 import pandas as pd
 from sqlalchemy import inspect
 from sqlalchemy import text
-
-
-
-
+from sqlalchemy import create_engine
+from botocore import UNSIGNED
+from botocore.client import Config
+import boto3 
 
 
 class DatabaseConnector:
@@ -26,24 +25,50 @@ class DatabaseConnector:
         #print(engine)
         return engine 
 
+    ''' This method(engine) is for bd_creds.yaml '''
+   
+    # def upload_to_db(self, df, table_name ,engine):
+    #     #engine = DatabaseConnector.init_db_engine(self)
+    #     df.to_sql(table_name, engine, if_exists='replace')
+
+    ''' This method (engine) is for df_pdf'''
+
+    # def upload_to_db(self, df, df_data, engine):
+    #     df.to_sql(df_data, engine, if_exists='replace') 
+
+
+    ''' This method (engine) is for df_api'''
+    
+    # def upload_to_db(self,df, df_api, engine):
+    #     df.to_sql(df_api, engine, if_exists='replace') 
+
+    ''' This method (engine) is for df_bucket'''
+
+    def upload_to_db(self,df, df_bucket, engine):
+        df.to_sql(df_bucket, engine, if_exists='replace') 
+
+    # ''' This method (engine) is for orders_table'''
+    # def upload_to_db(self,df, new_df_orders, engine):
+    #     df.to_sql(new_df_orders, engine, if_exists='replace') 
+
+    # ''' This method (engine) is for dim_date_time'''
+    # def upload_to_db(self,df, sales_date_df, engine):
+    #     df.to_sql(sales_date_df, engine, if_exists='replace') 
+        
 
    
-    def upload_to_db(self, df, table_name ,engine):
-        #engine = DatabaseConnector.init_db_engine(self)
-        df.to_sql(table_name, engine, if_exists='append')
-        
-        
 
-    
-       
-        
-    
 
+
+
+        
         
 database_connect = DatabaseConnector()
-credential = database_connect.read_db_credentials()
-engine = database_connect.init_db_engine()
-  
+# credential = database_connect.read_db_credentials()
+# engine = database_connect.init_db_engine()
+#database_connect.upload_to_db()
+
+
       
        
 
