@@ -2,9 +2,12 @@
 SELECT 
 	country_code AS country,
 	COUNT(store_code) AS total_no_store 
-FROM dim_store_details
-GROUP BY country
-ORDER BY total_no_store DESC;
+FROM 
+    dim_store_details
+GROUP BY 
+    country
+ORDER BY 
+    total_no_store DESC;
 
 
 
@@ -24,11 +27,16 @@ LIMIT
 ## TASK 3:
 SELECT ROUND(SUM (orders_table.product_quantity * dim_products.product_price)) AS total_sales,
 	       dim_date_times.month
-FROM orders_table
-JOIN dim_date_times ON orders_table.date_uuid = dim_date_times.date_uuid
-JOIN dim_products ON orders_table.product_code = dim_products.product_code
-GROUP BY dim_date_times.month
-ORDER BY total_sales DESC
+FROM 
+    orders_table
+JOIN 
+    dim_date_times ON orders_table.date_uuid = dim_date_times.date_uuid
+JOIN 
+    dim_products ON orders_table.product_code = dim_products.product_code
+GROUP BY 
+    dim_date_times.month
+ORDER BY 
+    total_sales DESC
 LIMIT 6;
 
 
@@ -43,8 +51,10 @@ SELECT COUNT (product_quantity) AS number_of_sales,
 END) AS location
 FROM 
 	orders_table
-GROUP BY store_code
-ORDER BY location DESC
+GROUP BY 
+    store_code
+ORDER BY 
+    location DESC
 LIMIT 2;
 
 ###TASK 5
@@ -58,11 +68,16 @@ FROM
 	SELECT ROUND( SUM(dim_products.product_price * orders_table.product_quantity) ) AS total_sales,
 	       dim_store_details.store_type
 		  
-FROM orders_table
-JOIN dim_products ON orders_table.product_code = dim_products.product_code
-JOIN dim_store_details ON orders_table.store_code = dim_store_details.store_code
-GROUP BY dim_store_details.store_type
-ORDER BY store_type DESC
+FROM 
+    orders_table
+JOIN 
+    dim_products ON orders_table.product_code = dim_products.product_code
+JOIN 
+    dim_store_details ON orders_table.store_code = dim_store_details.store_code
+GROUP BY 
+    dim_store_details.store_type
+ORDER BY 
+    store_type DESC
 	) AS "percentage_total(%)"
 	GROUP BY store_type,total_sales
 	ORDER BY total_sales DESC;
@@ -74,10 +89,14 @@ SELECT ROUND(SUM(dim_products.product_price * orders_table.product_quantity)) AS
 	   dim_date_times.year AS "Year",
 	   dim_date_times.month AS "Month"
  	
-FROM orders_table
-JOIN dim_date_times ON orders_table.date_uuid = dim_date_times.date_uuid
-JOIN dim_products ON orders_table.product_code = dim_products.product_code
-GROUP BY  dim_date_times.year,dim_date_times.month
+FROM 
+    orders_table
+JOIN 
+    dim_date_times ON orders_table.date_uuid = dim_date_times.date_uuid
+JOIN 
+    dim_products ON orders_table.product_code = dim_products.product_code
+GROUP BY  
+    dim_date_times.year,dim_date_times.month
 ORDER BY "Total_sales" DESC
 LIMIT 10;
 
@@ -88,8 +107,10 @@ SELECT
 FROM 
 	dim_store_details
 
-GROUP BY country_code
-ORDER BY "Total_staff_numbers" DESC;
+GROUP BY 
+    country_code
+ORDER BY
+     "Total_staff_numbers" DESC;
 
 
 
