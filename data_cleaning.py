@@ -10,17 +10,13 @@ from data_extraction import DataExtractor
 from sqlalchemy import create_engine
 
 
-
-
 class DataCleaning:
-      def __init__(self, table_name = 'legacy_users'):
-            engine = DatabaseConnector.init_db_engine(self)
-            self.df_orders = DataExtractor.read_rds_tables(self, table_name, engine)
-            #self.new_df_orders = DataExtractor.read_rds_tables(self, table_name, engine) # Task 6
-            self.df_pdf = DataExtractor.retrieve_pdf_data(self)
-            self.df_api = DataExtractor.retrieve_stores_data(self, num_of_stores = 451) 
-            self.df_bucket = DataExtractor.extract_from_s3(self)
-            self.sales_date_df = DataExtractor.sales_date(self)
+      def __init__(self, engine = DatabaseConnector().init_db_engine(), table_name = 'legacy_users'):
+          self.df_orders = DataExtractor(engine).read_rds_tables(table_name) 
+          self.df_pdf = DataExtractor(engine).retrieve_pdf_data()
+          self.df_api = DataExtractor(engine).retrieve_stores_data(num_of_stores = 451) 
+          self.df_bucket = DataExtractor(engine).extract_from_s3() 
+          sales_date_df = DataExtractor(engine).sales_date()
 
       def clean_user_data(self):
           self.df_orders = self.df_orders.dropna(how='any').dropna(how='any', axis=1) 
@@ -29,32 +25,27 @@ class DataCleaning:
           self.df_orders.update(self.df_orders)
           return self.df_orders
 
-
-      def standardise_phone_number(self):
+      def standardise_phone_number(self): 
           self.df_orders['phone_number'] = self.df_orders['phone_number'].astype('str')
           self.df_orders['phone_number'] = self.df_orders['phone_number'].str.replace(r'[^0-9]+', '')
           self.df_orders.update(self.df_orders)
           return self.df_orders
       
-      def clean_card_data(self):     #####
-          df_data = pd.concat(self.df_pdf, axis=1, ignore_index=False)
-          df_data = df_data.replace('?','')
-          df_data.update(df_data)
-          df_data = df_data.dropna(how='any').dropna(how='any', axis=1) 
-          df_data.update(df_data)
-          return df_data
+      def clean_card_data(self):   
+          df_pdf = pd.concat(self.df_pdf, axis=1, ignore_index=False)
+          df_pdf = df_pdf.replace('?','')
+          df_pdf.update(df_pdf)
+          df_pdf = df_pdf.dropna(how='any').dropna(how='any', axis=1) 
+          df_pdf.update(df_pdf)
+          return df_pdf
          
       def called_clean_store_data(self):
-          #self.df_api.drop_duplicates()
-          #self.df_api = self.df_api.dropna(how='all')
-          #self.df_api = self.df_api.dropna(axis=1)
-          #self.df_api.update(self.df_api)
-          #return self.df_api
-          #print(self.df_api.iloc[:,5].head(60))
-          print(self.df_api.head(40))
-      
+          self.df_api.drop_duplicates()
+          self.df_api = self.df_api.dropna(how='all')
+          self.df_api = self.df_api.dropna(axis=1)
+          self.df_api.update(self.df_api)
+          return self.df_api
           
-      
       def convert_product_weights(self):  
           self.df_bucket['weights_in_kg'] = self.df_bucket['weight'].str.extract(r'(\d+.\d+)').astype('float')
           for page in self.df_bucket['weights_in_kg']:
@@ -66,19 +57,17 @@ class DataCleaning:
           cells_to_divide = self.df_bucket['weight'].str.contains('kg',na=False)  
           self.df_bucket['weights_in_kg'].iloc[~cells_to_divide.values] = self.df_bucket['weights_in_kg'].iloc[~cells_to_divide.values].multiply(0.001)
           return self.df_bucket
-          #print (self.df_bucket)
-         
-
+           
       def clean_products_data(self): 
           self.df_bucket = self.df_bucket.dropna(how='all')
           self.df_bucket['removed'] = self.df_bucket['removed'].astype('category')
           self.df_bucket['category'] = self.df_bucket['category'].astype('category')
           return self.df_bucket
-          
-
-      def clean_orders_data(self, table_name = 'orders_table'): # Task 6
+        
+      def clean_orders_data(self): 
+          table_name = 'orders_table'
           engine = DatabaseConnector.init_db_engine(self)
-          self.new_df_orders = DataExtractor().read_rds_tables(table_name, engine)
+          self.new_df_orders = DataExtractor(engine).read_rds_tables(table_name)
           self.new_df_orders = self.new_df_orders.drop(["first_name", "last_name", "1", "index"], axis=1)
           self.new_df_orders = self.new_df_orders.dropna(how='any').dropna(how='any', axis=1) 
           return self.new_df_orders
@@ -89,56 +78,46 @@ class DataCleaning:
           self.sales_date_df = self.sales_date_df.drop_duplicates()
           self.sales_date_df.update(self.sales_date_df)
           return self.sales_date_df
+     
+      def run_cleaning(self):
+          clean_data = DataCleaning() 
+          df_orders = clean_data.standardise_phone_number()
+          engine_yaml = create_engine(f"{'postgresql'}+{'psycopg2'}://{'postgres'}:{'###'}@{'localhost'}:{'5432'}/{'Sales_Data'}") 
+          DatabaseConnector().upload_to_db_as_dim_users(df_orders,'dim_users', engine_yaml)
+          
+          clean_data = DataCleaning()
+          df_pdf = clean_data.clean_card_data() 
+          engine_pdf = create_engine(f"{'postgresql'}+{'psycopg2'}://{'postgres'}:{'###'}@{'localhost'}:{'5432'}/{'Sales_Data'}") 
+          DatabaseConnector().upload_to_db_as_dim_card_details(df_pdf,'dim_card_details', engine_pdf)
+            
+          clean_data = DataCleaning()
+          df_api = clean_data.called_clean_store_data()
+          engine_api = create_engine(f"{'postgresql'}+{'psycopg2'}://{'postgres'}:{'###'}@{'localhost'}:{'5432'}/{'Sales_Data'}") 
+          DatabaseConnector().upload_to_db_as_dim_store_details (df_api,'dim_store_details', engine_api)
+         
+          clean_data = DataCleaning()
+          df_bucket = clean_data.clean_products_data()
+          engine_bucket = create_engine(f"{'postgresql'}+{'psycopg2'}://{'postgres'}:{'###'}@{'localhost'}:{'5432'}/{'Sales_Data'}") 
+          DatabaseConnector().upload_to_db_as_dim_products(df_bucket,'dim_products', engine_bucket)
+
+          clean_data = DataCleaning()
+          df_new_orders = clean_data.clean_orders_data()
+          engine_orders = create_engine(f"{'postgresql'}+{'psycopg2'}://{'postgres'}:{'###'}@{'localhost'}:{'5432'}/{'New_Database'}") 
+          DatabaseConnector().upload_to_db_as_orders_table(df_new_orders,'orders_table', engine_orders)
+        
+          clean_data = DataCleaning()
+          sales_date_df = clean_data.cleaning_sales_date()
+          engine_sales = create_engine(f"{'postgresql'}+{'psycopg2'}://{'postgres'}:{'###'}@{'localhost'}:{'5432'}/{'Sales_Data'}") 
+          DatabaseConnector().upload_to_db_as_dim_date_times(sales_date_df,'dim_date_times', engine_sales) 
+           
           
        
-           
+if __name__ == '__main__':
+    clean_data = DataCleaning(engine = DatabaseConnector().init_db_engine()) 
+    clean_data.run_cleaning()
+               
        
         
         
-clean_data = DataCleaning()
-#clean_data.clean_user_data()
-#df_legacy = clean_data.standardise_phone_number()       
-
-#engine = DatabaseConnector().init_db_engine() # engine for yaml
-#df_pdf = DataExtractor().retrieve_pdf_data()
-#df = DataCleaning().standardise_phone_number()
-
-#print(engine)
-#engine.connect()
-# engine = create_engine(f"{'postgresql'}+{'psycopg2'}://{'postgres'}:{'###'}@{'localhost'}:{'5432'}/{'Sales_Data'}") # yaml
-# DatabaseConnector().upload_to_db(df,'dim_users', engine)
 
 
-# engine = DataExtractor().retrieve_pdf_data() # engine for pdf
-# df = DataCleaning().clean_card_data()
-# engine = create_engine(f"{'postgresql'}+{'psycopg2'}://{'postgres'}:{'###'}@{'localhost'}:{'5432'}/{'Sales_Data'}") #pdf
-# DatabaseConnector().upload_to_db(df,'dim_card_details', engine)
-
-# engine = DataExtractor().retrieve_stores_data(num_of_stores=451) # engine for df_api
-# df = DataCleaning().called_clean_store_data()
-# engine = create_engine(f"{'postgresql'}+{'psycopg2'}://{'postgres'}:{'###'}@{'localhost'}:{'5432'}/{'Sales_Data'}") #api
-# DatabaseConnector().upload_to_db(df,'dim_store_details', engine)
-
-# engine = DataExtractor().extract_from_s3() # engine for df_bucket
-# df = DataCleaning().convert_product_weights()
-# #df = DataCleaning().clean_products_data()
-# engine = create_engine(f"{'postgresql'}+{'psycopg2'}://{'postgres'}:{'###'}@{'localhost'}:{'5432'}/{'Sales_Data'}") #bucket
-# DatabaseConnector().upload_to_db(df,'dim_products', engine)
-
-# engine = DatabaseConnector().init_db_engine()
-# df = DataCleaning().clean_orders_data()
-# engine = create_engine(f"{'postgresql'}+{'psycopg2'}://{'postgres'}:{'###'}@{'localhost'}:{'5432'}/{'Sales_Data'}") #new_df_orders. Task 6
-# DatabaseConnector().upload_to_db(df,'orders_table', engine)
-
-# engine = DataExtractor().sales_date()
-# df = DataCleaning().cleaning_sales_date()
-# engine = create_engine(f"{'postgresql'}+{'psycopg2'}://{'postgres'}:{'###'}@{'localhost'}:{'5432'}/{'Sales_Data'}") #sales_date
-# DatabaseConnector().upload_to_db(df,'dim_date_times', engine)
-
-#clean_data.clean_card_data()
-clean_data.called_clean_store_data()
-
-#df_bucket = clean_data.convert_product_weights()
-# clean_data.clean_products_data()   
-#clean_data.clean_orders_data()
-#clean_data.cleaning_sales_date()
