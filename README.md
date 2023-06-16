@@ -1,5 +1,5 @@
 # Multinational-Retail-Data-Centralisation
-(1) Environment setup
+1 Environment setup
 
 1.1 GitHub repo created
 
