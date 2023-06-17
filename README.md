@@ -91,5 +91,6 @@
 * Which German store type is selling the most?
 
 * How quickly is the company making sales?
+     * To run: python data_cleaning.py
 
 
